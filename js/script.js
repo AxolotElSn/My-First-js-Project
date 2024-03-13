@@ -38,31 +38,76 @@ document.addEventListener('DOMContentLoaded', () =>{ // это делает та
           checkbox = addFoarm.querySelector('[type="checkbox"]'); // [] - это обозначение html атрибутов
 
     
-    addFoarm.addEventListener('submit', (event) => { // submit - собфтие которое происходит при отправке формы (нажимает на кнопку например)
-        event.preventDefault(); // отмена стандартного поведения браузера
+    addFoarm.addEventListener('submit', (event) => { // submit - событие которое происходит при отправке формы (нажимает на кнопку например) / event - объект содержащий информацию об элементе
+        event.preventDefault(); // отмена стандартного поведения браузера. В нашем случае event - это объект события который передается в ф-ию при возникновении события submit. С его помощью мы отменяем стандартное поведение браузера тут
 
-        const newFilm = addInput.value; // value - это то что мы вводим в форму
-        const favotite = checkbox.checked;
-    }) // остановился на 10 минуте
+        let newFilm = addInput.value; // value - это то что мы вводим в форму
+        const favotite = checkbox.checked; // тут проверяем стоит ли галочка
+
+        if(newFilm) {
+
+            if(newFilm.length > 21) {
+                newFilm = `${newFilm.substring(0, 22)}...`;
+            }
+
+            if(favotite) {
+                console.log("Добавляем любимый фильм");
+            }
+
+            movieDB.movies.push(newFilm);
+            sortArr(movieDB.movies);
     
-    adv.forEach(item => {
-        item.remove();
+            createMovieList(movieDB.movies, movieList);
+        }    
+
+        event.target.reset();
     });
+
+
+    const deleteAdv = (arr) => {
+        arr.forEach(item => {
+            item.remove();
+        });
+    };
+
     
-    genre.textContent = 'Драмма';
+    const makeChanges = () => {
+        genre.textContent = 'Драмма';
     
-    poster.style.backgroundImage = 'url("../img/bg.jpg")';
-    
-    movieList.innerHTML = ""; // так можно удобно отчистить элемент
-    
-    movieDB.movies.sort();
-    
-    movieDB.movies.forEach((film, i) => {
-        movieList.innerHTML += `
-        <li class="promo__interactive-item">${i + 1} ${film}
-            <div class="delete"></div>
-        </li>
-        `;
-    });
+        poster.style.backgroundImage = 'url("../img/bg.jpg")';
+    };
+
+    const sortArr = (arr) => {
+        arr.sort();
+    };
+
+
+    function createMovieList(films, parent){
+        parent.innerHTML = ""; // так можно удобно отчистить элемент
+        sortArr(films);
+        
+        films.forEach((film, i) => {
+            parent.innerHTML += `
+            <li class="promo__interactive-item">${i + 1} ${film}
+                <div class="delete"></div>
+            </li>
+            `;
+        });
+
+        document.querySelectorAll('.delete').forEach((btn, i) => {
+            btn.addEventListener('click', () => {
+                btn.parentElement.remove(); // parentElement - родительский элемент
+                movieDB.movies.splice(i, 1); // splise - метод вырезает элемент. сначала помещаем номер который надо удалить, потом сколькл элементов удалить
+
+                createMovieList(films, parent); // рекурсия помогает пересобрать массив заново что позволяет делать правильную умерацию после удаления элмента
+            });
+        });
+    }
+
+
+
+    makeChanges();
+    deleteAdv(adv);
+    createMovieList(movieDB.movies, movieList);
     
 });
